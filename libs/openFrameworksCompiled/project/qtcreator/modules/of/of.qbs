@@ -107,15 +107,21 @@ Module{
                 "gtk+-3.0",
                 "libmpg123",
                 "glfw3",
-                "openssl",
-                "libcurl",
                 "liburiparser",
+                "libcurl",
             ].concat(pkgConfigs);
 
 
             if(Helpers.pkgExists("rtaudio")){
                 pkgs.push("rtaudio");
             }
+            if(Helpers.pkgExists("libmpg123")){
+                pkgs.push("libmpg123");
+            }
+            if(Helpers.pkgExists("gtk+-3.0")){
+                pkgs.push("gtk+-3.0")
+            }
+
             return pkgs;
         }else if(platform === "msys2"){
             var pkgs = [
@@ -139,13 +145,14 @@ Module{
 
     readonly property stringList ADDITIONAL_LIBS: {
         if(platform === "linux"  || platform === "linux64"){
-            return [
+            var libs = [
                 "glut",
                 "X11",
                 "Xrandr",
                 "Xxf86vm",
                 "Xi",
                 "Xcursor",
+                "Xinerama",
                 "dl",
                 "pthread",
                 "freeimage",
@@ -157,6 +164,8 @@ Module{
             if(!Helpers.pkgExists("rtaudio")){
                 libs.push("rtaudio");
             }
+
+            return libs;
         }else if(platform === "msys2"){
             var libs = [
                 'opengl32', 'gdi32', 'msimg32', 'glu32', 'dsound', 'winmm', 'strmiids',
@@ -165,7 +174,7 @@ Module{
             ];
 
             if(!Helpers.pkgExists("rtaudio")){
-                libs.push("rtaudio");
+                libs = libs.concat(['rtaudio', 'ksuser', 'ole32', 'dsound']);
             }
 
             return libs;
@@ -435,7 +444,12 @@ Module{
         var defines = ['GCC_HAS_REGEX'];
 
         if(qbs.targetOS.contains("linux")){
-            defines = defines.concat([ 'OF_USING_GTK', 'OF_USING_MPG123']);
+            if(Helpers.pkgExists("gtk+-3.0")){
+                defines.push("OF_USING_GTK")
+            }
+            if(Helpers.pkgExists("libmpg123")){
+                defines.push("OF_USING_MPG123");
+            }
         }
 
         if(qbs.targetOS.indexOf("windows")>-1){
